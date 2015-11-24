@@ -9,6 +9,7 @@
 #define BITS_PER_WORD (CHAR_BIT * sizeof(unsigned int)) 
 #define I_WORD(i)   ((unsigned int)(i) / BITS_PER_WORD)
 #define I_BIT(i)    (1 << ((unsigned int)(i) % BITS_PER_WORD))
+#define checkudata(L) (NumArray *)luaL_checkudata(L, 1, "LuaBook.array")
 
 typedef struct {
     int size;
@@ -29,6 +30,7 @@ static const struct luaL_Reg arraylib[] = {
 
 int luaopen_array(lua_State *L)
 {
+    luaL_newmetatable(L, "LuaBook.array");
     luaL_newlib(L, arraylib);
     return 1;
 }
@@ -46,15 +48,18 @@ static int newarray(lua_State *L)
     a->size = n;
     for(i=0; i < I_WORD(n-1); i++)
         a->values[i] = 0;
+    luaL_getmetatable(L, "LuaBook.array");
+    lua_setmetatable(L, -2);
     return 1;
 }
 
 static int setarray(lua_State *L)
 {
-    NumArray *a = (NumArray *)lua_touserdata(L, 1);
+//    NumArray *a = (NumArray *)lua_touserdata(L, 1);
+    NumArray *a = checkudata(L);
     int index = luaL_checkint(L, 2) - 1;
     
-    luaL_argcheck(L, a != NULL, 1, "'array' expected");
+ //   luaL_argcheck(L, a != NULL, 1, "'array' expected");
     luaL_argcheck(L, 0 <= index && index < a->size, 2,
                         "'index' out of range");
     unsigned int I_word = I_WORD(index);
@@ -71,10 +76,11 @@ static int setarray(lua_State *L)
 
 static int getarray(lua_State *L)
 {
-    NumArray *a = (NumArray *)lua_touserdata(L, 1);
+//    NumArray *a = (NumArray *)lua_touserdata(L, 1);
+    NumArray *a = checkudata(L);
     int index = luaL_checkint(L, 2) - 1;
 
-    luaL_argcheck(L, a != NULL, 1, "'array' expected");
+//    luaL_argcheck(L, a != NULL, 1, "'array' expected");
     luaL_argcheck(L, 0 <= index && index < a->size, 2, 
                             "'index' out of range");
     lua_pushboolean(L, a->values[I_WORD(index)] & I_BIT(index));
@@ -83,8 +89,9 @@ static int getarray(lua_State *L)
 
 static int getsize(lua_State *L)
 {
-    NumArray *a = (NumArray *)lua_touserdata(L, 1);
-    luaL_argcheck(L, a != NULL, 1, "'array' expected");
+//    NumArray *a = (NumArray *)lua_touserdata(L, 1);
+    NumArray *a = checkudata(L);
+//    luaL_argcheck(L, a != NULL, 1, "'array' expected");
     lua_pushinteger(L, a->size);
     return 1;
 }
