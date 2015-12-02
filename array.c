@@ -92,7 +92,7 @@ static int getsize(lua_State *L)
 //    NumArray *a = (NumArray *)lua_touserdata(L, 1);
     NumArray *a = checkudata(L);
 //    luaL_argcheck(L, a != NULL, 1, "'array' expected");
-    lua_pushinteger(L, a->size);
+    lua_pushboolean(L, a->size);
     return 1;
 }
 
