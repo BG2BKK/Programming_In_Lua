@@ -9,7 +9,7 @@
 #define BITS_PER_WORD (CHAR_BIT * sizeof(unsigned int)) 
 #define I_WORD(i)   ((unsigned int)(i) / BITS_PER_WORD)
 #define I_BIT(i)    (1 << ((unsigned int)(i) % BITS_PER_WORD))
-#define checkudata(L) (NumArray *)luaL_checkudata(L, 1, "LuaBook.array")
+#define checkarray(L) (NumArray *)luaL_checkudata(L, 1, "LuaBook.array")
 
 typedef struct {
     int size;
@@ -19,19 +19,30 @@ static int newarray(lua_State *L);
 static int getsize(lua_State *L);
 static int setarray(lua_State *L);
 static int getarray(lua_State *L);
+static int array2string(lua_State *L);
 
-static const struct luaL_Reg arraylib[] = {
+static const struct luaL_Reg arraylib_f[] = {
     {"new", newarray},
+    {NULL, NULL}
+};
+
+static const struct luaL_Reg arraylib_m[] = {
     {"size", getsize},
-    {"set", setarray},
     {"get", getarray},
+    {"set", setarray},
+    {"__tostring", array2string},
     {NULL, NULL}
 };
 
 int luaopen_array(lua_State *L)
 {
     luaL_newmetatable(L, "LuaBook.array");
-    luaL_newlib(L, arraylib);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -2, "__index");
+
+    luaL_setfuncs(L, arraylib_m, 0);
+
+    luaL_newlib(L, arraylib_f);
     return 1;
 }
 
@@ -56,7 +67,7 @@ static int newarray(lua_State *L)
 static int setarray(lua_State *L)
 {
 //    NumArray *a = (NumArray *)lua_touserdata(L, 1);
-    NumArray *a = checkudata(L);
+    NumArray *a = checkarray(L);
     int index = luaL_checkint(L, 2) - 1;
     
  //   luaL_argcheck(L, a != NULL, 1, "'array' expected");
@@ -77,7 +88,7 @@ static int setarray(lua_State *L)
 static int getarray(lua_State *L)
 {
 //    NumArray *a = (NumArray *)lua_touserdata(L, 1);
-    NumArray *a = checkudata(L);
+    NumArray *a = checkarray(L);
     int index = luaL_checkint(L, 2) - 1;
 
 //    luaL_argcheck(L, a != NULL, 1, "'array' expected");
@@ -90,9 +101,18 @@ static int getarray(lua_State *L)
 static int getsize(lua_State *L)
 {
 //    NumArray *a = (NumArray *)lua_touserdata(L, 1);
-    NumArray *a = checkudata(L);
+    NumArray *a = checkarray(L);
 //    luaL_argcheck(L, a != NULL, 1, "'array' expected");
     lua_pushboolean(L, a->size);
+    return 1;
+}
+
+static int array2string(lua_State *L)
+{
+    NumArray *a = checkarray(L);
+//    NumArray *a = (NumArray *)lua_touserdata(L, 1);
+
+    lua_pushfstring(L, "array(%d)", a->size);
     return 1;
 }
 
