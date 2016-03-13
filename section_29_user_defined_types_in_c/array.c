@@ -36,12 +36,13 @@ static const struct luaL_Reg arraylib_m[] = {
 
 int luaopen_array(lua_State *L)
 {
+    int n ;
     luaL_newmetatable(L, "LuaBook.array");
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
+    n = lua_gettop(L);
 
     luaL_setfuncs(L, arraylib_m, 0);
-
     luaL_newlib(L, arraylib_f);
     return 1;
 }
